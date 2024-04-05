@@ -2,6 +2,7 @@
 ## Tasks 
 1. loading tinyllama + llama2 (convert)-> Yixin 
  - more sizes
+ - 70 inference multiple gpus 
 2. gptfast algorithm -> Hanchi 
 
 ## Materials 
