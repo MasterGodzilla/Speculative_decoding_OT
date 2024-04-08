@@ -72,6 +72,7 @@ mistralai/Mistral-7B-Instruct-v0.2
 For example, to convert Llama-2-7b-chat-hf
 ```bash
 export MODEL_REPO=meta-llama/Llama-2-7b-chat-hf
+export MODEL_REPO=TinyLlama/TinyLlama-1.1B-Chat-v1.0
 ./scripts/prepare.sh $MODEL_REPO
 ```
 
