@@ -1,0 +1,9 @@
+{
+    "acceptance_rate_vector": "binary_accept_vector.pt",
+    "max_depth": 16,
+    "max_budget": 16,
+    "draft_time": 0.3,
+    "valid_budget": [1, 2, 4, 8, 16],
+    "target_time":[10, 10, 10, 12, 14],
+    "dst": "binary_tree.pt"
+}
