@@ -18,13 +18,14 @@ def sampling_without_replacement(
         return position
 
 def sampling_with_replacement(
-        sampling_logits: torch.Tensor,   
+        sampling_logits: torch.Tensor,   # (idx_len, dim)
         num_samples: int,
         temperature :float):
 
         #sampling_q = softmax(sampling_logits / temperature, dim=-1)
-        sampling_q = softmax(sampling_logits / temperature, dim=-1)    
-        position = sampling_q.multinomial(num_samples=num_samples, replacement=False).flatten()
+        sampling_q = softmax(sampling_logits / temperature, dim=-1)    # (idx_len, dim)
+        # before flatten, shape is (num_samples, idx_len). after flatten, shape is (num_samples * idx_len)
+        position = sampling_q.multinomial(num_samples=num_samples, replacement=False).flatten() 
         return position
 def sampling_argmax(
         sampling_logits: torch.Tensor, 
@@ -215,7 +216,7 @@ def cuda_graph_for_sampling_with_replacement(
                 device="cuda:0", dtype=torch.float16, 
                 dim=32000, max_length=384, 
                 n_warmups=3, mempool=None,
-                idx_len = 8, num_samples = 16,
+                idx_len = 8, num_samples = 16, 
                 temperature = 0.6, tree_size = 64):
     
     static_sampling_logits = torch.full((idx_len, dim), 1, dtype=dtype, device=device)
@@ -247,8 +248,95 @@ def cuda_graph_for_sampling_with_replacement(
     
     return run
     
-        
 
+def sampling_a_and_i(
+        sampling_logits: torch.Tensor, 
+        rand: torch.Tensor,
+        temperature: float,
+        ):
+    """
+    Sampling the pair of top-1 and any other index. 
+    For example, if 'a' is the token with highest probability, we sample the pair (a,i) where i is any other token
+    with prob P(i,a) = p(i) and P(a,i) = p(a) * p(i) / (1-p(a))
+    """
+    sampling_q = softmax(sampling_logits / temperature, dim=-1) # (idx_len, dim)
+    # print ("sampling_q", sampling_q)
+    # a (idx_len, 1)
+    a = sampling_q.argmax(dim=-1).unsqueeze(-1) # (idx_len, 1)
+    # print ("a", a)
+    # gumbel trick
+    # e.g. position = (rand.log()/sampling_q).topk(k=num_samples).indices.flatten()
+    first = (rand.log()/sampling_q).topk(k=1).indices # (idx_len, 1)
+    # print ("first",first)
 
+    mask = a == first
+    # row wise indexing with a and set to zero
+    sampling_q.scatter_(-1, a, 1e-12) # (idx_len, 1)
+    sampling_q = sampling_q / sampling_q.sum(dim=-1, keepdim=True)
+    # print ("sampling_q after renormalization:", sampling_q)
+    i = (rand.log()/sampling_q).topk(k=1).indices # (idx_len, 1)
+    # print ("i:", i)
+    second = torch.where(mask, i, a)
+    # print ("second:", second)
 
+    # concatenate first and second row wise and then flatten
+    # like, [first1, second1, first2, second2, ...]
+    return torch.cat([first, second], dim=-1).flatten() # (idx_len * 2)
+    
 
+def cuda_graph_for_sampling_a_and_i(
+                device="cuda:0", dtype=torch.float16, 
+                dim=32000, max_length=384, 
+                idx_len = 8,
+                n_warmups=3, mempool=None,
+                temperature = 0.6, tree_size = 64
+                ):
+    """
+    Create a cuda graph for sampling the pair of top-1 and any other index. 
+    For example, if 'a' is the token with highest probability, we sample the pair (a,i) where i is any other token
+    with prob P(i,a) = p(i) and P(a,i) = p(a) * p(i) / (1-p(a))
+    """
+
+    static_sampling_logits = torch.full((idx_len, dim), 1, dtype=dtype, device=device)
+    static_rand = torch.empty((idx_len, dim), dtype=dtype, device=device).uniform_()
+
+    s = torch.cuda.Stream()
+    s.wait_stream(torch.cuda.current_stream())
+    
+    with torch.cuda.stream(s):
+        for _ in range(n_warmups):
+            static_position = sampling_a_and_i(
+                 static_sampling_logits,
+                 static_rand,
+                 temperature,
+            )
+        s.synchronize()
+    torch.cuda.current_stream().wait_stream(s)
+
+    graph = torch.cuda.CUDAGraph()
+
+    with torch.cuda.graph(graph, pool=mempool):
+        static_position = sampling_a_and_i(
+                 static_sampling_logits,
+                 static_rand,
+                 temperature,
+            )
+    def run(draft_logits, rand_vector):
+        static_sampling_logits.copy_(draft_logits)
+        static_rand.copy_(rand_vector)
+        graph.replay()
+        return static_position.clone()
+    return run
+
+if __name__ == "__main__":
+    # test sampling_a_and_i
+    sampling_logits = torch.randn(8, 20)
+    rand_vector = torch.randn(8, 20)
+    temperature = 0.6
+    top = sampling_logits.argmax(dim=-1)
+    first_and_second = sampling_a_and_i(sampling_logits, rand_vector, temperature).reshape(-1, 2)
+    first = first_and_second[:, 0]
+    second = first_and_second[:, 1]
+    print (first, second)
+    # check if top is either first or second
+    assert torch.all((top == first) | (top == second))

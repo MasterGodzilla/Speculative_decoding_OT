@@ -125,7 +125,7 @@ class InferenceEngineTG:
 
 
 def capture_graph(
-    engine :InferenceEngine, decoding_seqlen :int =1, mempool=None, n_warmups :int=3
+    engine :InferenceEngine, decoding_seqlen :int =1, mempool=None, n_warmups :int=3  
 ):
     device = engine.device
     dtype = engine.dtype

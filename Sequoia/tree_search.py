@@ -18,7 +18,7 @@ max_depth = config["max_depth"]
 
 max_budget = config["max_budget"]
 
-T = torch.zeros((max_budget + 1, max_depth + 1, max_branch + 1)).fill_(-torch.inf)
+T = torch.zeros((max_budget + 1, max_depth + 1, max_branch + 1)).fill_(-torch.inf) 
 T_max = torch.zeros((max_budget + 1, max_depth + 1))
 branch_map = {}
 for l in range(1, max_depth + 1):
@@ -49,11 +49,16 @@ for m in tqdm(range(2, max_budget+1)):
                 new_list.append((m-new_y, l-1, new_branch))
                 branch_map[(m,l,b)] = new_list
 
- 
+# print ("T:", T)
+# only print non empty branches
+for key, value in branch_map.items():
+    if value:
+        # print(f"branch_map[{key}]: {value}")
+        pass
     
 
 results = T.max(dim=2).values
-print(results)
+print("results:",results)
 draft_inference_time = config['draft_time']
 target_verify_time = config['target_time']
 
@@ -62,9 +67,9 @@ valid_budget = config['valid_budget']
 
 dec_time = torch.inf
 pairs = None
-for i, b in enumerate(valid_budget):
-    target_time = target_verify_time[i]
-    for d, ac_len in enumerate(results[b]):
+for i, b in enumerate(valid_budget): # 1, 2, 4, 8, 16, 32
+    target_time = target_verify_time[i] # 10, 10, 10, 12, 14, 18
+    for d, ac_len in enumerate(results[b]): # max for budget b, ac_len = acceptance length
         if ac_len < 0:
             continue
         x = ((d) * draft_inference_time + target_time) / ac_len
@@ -72,7 +77,7 @@ for i, b in enumerate(valid_budget):
             dec_time = x
             pairs = (b,d)
 
-print(dec_time, target_verify_time[0] / dec_time, pairs)
+print("dec_time: ", dec_time, "target_verify_time[0] / dec_time: ", target_verify_time[0] / dec_time, "pairs: ", pairs)
 
 (m, l) = pairs
 b = T[m][l].argmax(dim=0).item()
@@ -87,7 +92,7 @@ parents = [-1]
 expand_lists = []
 expand_branches = []
 num_nodes = 1
-while True:
+while True: 
 
     expand = []
     expand_branch = []
