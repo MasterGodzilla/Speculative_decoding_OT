@@ -9,7 +9,7 @@ from accelerate import Accelerator
 import argparse
 from data_converter import convert_wiki_dataset, convert_cnn_dataset, convert_c4_dataset_eval, convert_dataset
 import argparse
-from Tree.SpecTree import SpecTreeTest
+from Tree.MyTree import MyTreeTest
 from Tree.GreedyTree import GreedyTreeTest
 from Engine.Engine import GraphInferenceEngine, GraphInferenceEngineTG
 parser = argparse.ArgumentParser()
@@ -55,7 +55,7 @@ def simulation_stochastic(target_model : GraphInferenceEngineTG, draft_model: Gr
             target_kv_len = 0
             while input_ids.shape[1] < 256 and terminate == False:
                 attn_mask.fill_(torch.finfo(dtype).min)
-                spectree = SpecTreeTest(prefix=input_ids.squeeze(0), device='cuda:0', temperature=T,
+                spectree = MyTreeTest(prefix=input_ids.squeeze(0), device='cuda:0', temperature=T,
                                     top_p=top_p, 
                                     draft_kv_len=draft_kv_len, target_kv_len=target_kv_len,
                                     draft_model_engine=draft_model, target_model_engine=target_model, max_length=max_length,

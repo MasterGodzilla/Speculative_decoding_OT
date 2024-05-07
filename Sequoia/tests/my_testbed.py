@@ -46,7 +46,8 @@ setup_seed(args.seed)
 
 def simulation_fast(target_model : GraphInferenceEngineTG, draft_model: GraphInferenceEngine, dataloader: DataLoader, T=0.6, top_p=0.9,
             max_length=512, residual_graph=None, grow_map=None, sampling_callables = None,
-            sample_gather_indices = None):
+            sample_gather_indices = None, 
+            tokenizer=None):
     num_eval_steps = len(dataloader)
     num_decoding_steps = 0
     num_large_model_steps = 0
@@ -89,6 +90,8 @@ def simulation_fast(target_model : GraphInferenceEngineTG, draft_model: GraphInf
                 input_ids = valid_tokens.unsqueeze(0)
                 if (input_ids[0][-1] == 2) or (input_ids[0][-1] == 0): terminate = True
             
+            # print (tokenizer.decode(input_ids[0].tolist()))
+            
             torch.cuda.synchronize()
             t2 = time.time()
             total_time += (t2 - t1)
@@ -99,7 +102,7 @@ def simulation_fast(target_model : GraphInferenceEngineTG, draft_model: GraphInf
 
 def simulation_mine(target_model : GraphInferenceEngineTG, draft_model: GraphInferenceEngine, dataloader: DataLoader, T=0.6, top_p=0.9,
             max_length=512, residual_graph=None, grow_map=None, sampling_callables = None,
-            sample_gather_indices = None):
+            sample_gather_indices = None, tokenizer=None):
     num_eval_steps = len(dataloader)
     num_decoding_steps = 0
     num_large_model_steps = 0
@@ -141,6 +144,8 @@ def simulation_mine(target_model : GraphInferenceEngineTG, draft_model: GraphInf
                 
                 input_ids = valid_tokens.unsqueeze(0)
                 if (input_ids[0][-1] == 2) or (input_ids[0][-1] == 0): terminate = True
+            
+            # print (tokenizer.decode(input_ids[0].tolist()))
             
             torch.cuda.synchronize()
             t2 = time.time()
@@ -259,7 +264,9 @@ dataloader = accelerator.prepare(dataloader)
 
 if args.Mode == 'greedy':
     simulation_fast(target_model=target_model, draft_model=draft_model, dataloader=dataloader, T=args.T, top_p=args.P,
-                                     max_length=args.M, residual_graph = residual_graph, grow_map = grow_map, sampling_callables=sampling_callables, sample_gather_indices = sample_gather_indices)
+                                     max_length=args.M, residual_graph = residual_graph, grow_map = grow_map, sampling_callables=sampling_callables, sample_gather_indices = sample_gather_indices,
+                                     tokenizer=tokenizer)
 elif args.Mode == 'mine':
     simulation_mine(target_model=target_model, draft_model=draft_model, dataloader=dataloader, T=args.T, top_p=args.P,
-                                     max_length=args.M, residual_graph = residual_graph, grow_map = grow_map, sampling_callables=sampling_callables, sample_gather_indices = sample_gather_indices)
+                                     max_length=args.M, residual_graph = residual_graph, grow_map = grow_map, sampling_callables=sampling_callables, sample_gather_indices = sample_gather_indices,
+                                     tokenizer=tokenizer)

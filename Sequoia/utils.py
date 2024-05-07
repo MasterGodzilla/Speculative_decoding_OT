@@ -271,9 +271,9 @@ def sampling_a_and_i(
 
     mask = a == first
     # row wise indexing with a and set to zero
-    sampling_q.scatter_(-1, a, 1e-12) # (idx_len, 1)
-    sampling_q = sampling_q / sampling_q.sum(dim=-1, keepdim=True)
+    sampling_q.scatter_(-1, a, 0) # (idx_len, 1)
     # print ("sampling_q after renormalization:", sampling_q)
+    # renormalization is unnecessary for gumbel sampling
     i = (rand.log()/sampling_q).topk(k=1).indices # (idx_len, 1)
     # print ("i:", i)
     second = torch.where(mask, i, a)

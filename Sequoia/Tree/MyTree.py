@@ -3,7 +3,7 @@ from torch.nn.functional import softmax
 from .Tree import Tree
 import time
 from Engine.Engine import GraphInferenceEngine, GraphInferenceEngineTG
-from utils import get_sampling_logits, ChildrenAccept, get_residual
+from utils import get_sampling_logits, ChildrenAccept, get_residual, sampling_a_and_i
 class MyTree(Tree):
     def __init__(self, 
                  draft_model_engine :GraphInferenceEngine,
@@ -132,55 +132,137 @@ class MyTree(Tree):
         return n_branch_list
     
     @torch.inference_mode()
-    def accept_step(self, parent_id :int):
+    def accept_step(self, parent_id :int, eps = 4e-5):
+        """
+        single draft:
+            since marginal \sum_i Q(a,i) = q(a), Q(i,a) = q(i), we treat as a single draft rejection sampling
+
+        two drafts:    
+            We verify sampling the pair of top-1 and any other index. 
+            For example, if 'a' is the token with highest probability, we sample the pair (a,i) where i is any other token
+            with Q(i,a) = q(i) and Q(a,i) = q(a) * q(i) / (1-q(a))
+            
+            For verification, give target distribution p, and sample (a,i) or (i,a) ~ Q, 
+            if i,a: 
+                accept i with min (1,p(i) / Q(i,a)) # accept as much i as first draft as possible
+            residual p'(i) = p(i) - Q(i,a) * min (1,p(i) / Q(i,a)) # leftover p(i) that is not captured by first draft
+            residual Q'(i,a) = Q(i,a) - Q(i,a) * min (1,p(i) / Q(i,a))
+            if a,i:
+                accept i with min(1, p'(i) / Q(a,i)) # accept i as second draft
+            residual p''(i) = p'(i) - Q(a,i) * min(1, p'(i) / Q(a,i)) # the p(i) that is not captured . 
+            residual Q'(a,i) = Q(a,i) - Q(a,i) * min(1, p'(i) / Q(a,i))
+
+            if a,i:
+                accept a with min(1, p(a)/\sum_i Q'(a,i))
+                p'(a) = p(a) - \sum_i Q'(a,i) * min(1, p(a) / \sum_i Q'(a,i))
+            if i,a: 
+                accept a with min(1, p'(a) / \sum_i Q'(i,a))
+            
+            return residual p''(a) = p'(a) - \sum_i Q'(i,a) * min(1, p'(a) / \sum_i Q'(i,a))
+        """
+
         logits_id = parent_id - (self.ground_truth_len - 1)
         p = self.target_logits[logits_id]
         draft_logits = self.draft_logits[logits_id]
         
-        children = self.Successors[logits_id]
+        
+        children = self.Successors[logits_id] # dtype: list[int]
         if len(children) == 0:
             return (-1, p)
-        
-        for pos in children:
+        elif len(children) == 1:
+            for pos in children:
 
-            token = self.tokens[pos + (self.ground_truth_len - 1)]
-            q = softmax(draft_logits / self.temperature, dim=-1)
-            r = self.r[pos + (self.ground_truth_len - 1)]
+                token = self.tokens[pos + (self.ground_truth_len - 1)]
+                q = softmax(draft_logits / self.temperature, dim=-1)
+                r = self.r[pos + (self.ground_truth_len - 1)]
+                
+                if p[token] > r * q[token]:
+                    return (pos + (self.ground_truth_len - 1), None)
+                else:
+                    p = self.residual_graph(p, q)
+                    draft_logits[token] = torch.finfo(self.dtype).min
+            return (-1, p)
+
+        elif len(children) == 2:
+            q = softmax(draft_logits / self.temperature, dim=-1) # draft probability: (vocab_size,)
+            a = q.argmax() # index of the token with highest draft probability, dtype: int
+            draft_logits[a] = -torch.inf
+            q_ai = q[a]*softmax(draft_logits / self.temperature, dim=-1) # draft probability without 'a': (vocab_size,) 
+            pos0 = children[0]
+            pos1 = children[1]
+            token0 = self.tokens[pos0 + (self.ground_truth_len - 1)]
+            token1 = self.tokens[pos1 + (self.ground_truth_len - 1)]
+
+            p_res = torch.zeros_like(p)
+            q_ai_res = torch.zeros_like(p)
+            p_res_res = torch.zeros_like(p)
+            q_ia_res = torch.zeros_like(p)
             
-            if p[token] > r * q[token]:
-                return (pos + (self.ground_truth_len - 1), None)
-            else:
-                p = self.residual_graph(p, q)
-                draft_logits[token] = torch.finfo(self.dtype).min
-        return (-1, p)
+            # first, try to accept as much i as possible
+            if a== token1: # i,a
+                i = token0 
+                r = self.r[pos0 + (self.ground_truth_len - 1)]
+                if p[i] > r * q[i]: # if r < p(i) / Q(i,a)
+                    return (pos0 + (self.ground_truth_len - 1), None)
+            # every index of q_res that is not a
+            not_a = torch.arange(p.size(0),device=self.device)!=a
+            p_res[not_a] = (p[not_a]-q[not_a]).relu_() # residual draft
+            q_ia_res[not_a] = (q[not_a]-p[not_a]).relu_() # residual target
+
+            if a == token0: # a,i
+                i = token1
+                r = self.r[pos1 + (self.ground_truth_len - 1)]
+                if p_res[i] > r * q_ai[i]: # if r < p'(i) / Q(a,i)
+                    return (pos1 + (self.ground_truth_len - 1), None)
+            p_res_res[not_a] = (p_res[not_a] - q_ai[not_a]).relu_()
+            q_ai_res[not_a] = (q_ai[not_a] - p_res[not_a]).relu_()
+
+            # second, accept 'a' as much as possible
+            if a == token0: # a,i
+                r = self.r[pos0 + (self.ground_truth_len - 1)]
+                if p[a] > r * q_ai_res.sum():
+                    return (pos0 + (self.ground_truth_len - 1), None)
+            p_res[a] = (p[a] - q_ai_res.sum()).relu_()
+            if a == token1: # i,a 
+                r = self.r[pos1 + (self.ground_truth_len - 1)]
+                if p_res[a] > r * q_ia_res.sum():
+                    return (pos1 + (self.ground_truth_len - 1), None)
+            p_res_res[a] = (p_res[a] - q_ia_res.sum()).relu_()
+            p_res_res /= (p_res_res.sum(dim = -1).unsqueeze(-1))
+            return (-1, p_res_res)
+
+        else: 
+            raise NotImplementedError("Not implemented for more than 2 children")            
+            
+            
 
     @torch.inference_mode()
     def verify(self, benchmark = False):
         """
         We verify sampling the pair of top-1 and any other index. 
         For example, if 'a' is the token with highest probability, we sample the pair (a,i) where i is any other token
-        with prob P(i,a) = p(i) and P(a,i) = p(a) * p(i) / (1-p(a))
+        with q Q(i,a) = q(i) and Q(a,i) = q(a) * q(i) / (1-q(a))
         
-        For verification, give target distribution q, and sample (a,i) or (i,a) ~ P, 
+        For verification, give target distribution p, and sample (a,i) or (i,a) ~ Q, 
         if i,a: 
-            accept i with min (1,q(i) / P(i,a)) # accept as much i as first draft as possible
-        residual q'(i) = q(i) - P(i,a) * min (1,q(i) / P(i,a)) # leftover q(i) that is not captured by first draft
-        residual P'(i,a) = P(i,a) - P(i,a) * min (1,q(i) / P(i,a))
+            accept i with min (1,p(i) / Q(i,a)) # accept as much i as first draft as possible
+        residual p'(i) = p(i) - Q(i,a) * min (1,p(i) / Q(i,a)) # leftover p(i) that is not captured by first draft
+        residual Q'(i,a) = Q(i,a) - Q(i,a) * min (1,p(i) / Q(i,a))
         if a,i:
-            accept i with min(1, q'(i) / P(a,i)) # accept i as second draft
-        residual q''(i) = q'(i) - P(a,i) * min(1, q'(i) / P(a,i)) # the q(i) that is not captured . 
-        residual P'(a,i) = P(a,i) - P(a,i) * min(1, q'(i) / P(a,i))
+            accept i with min(1, p'(i) / Q(a,i)) # accept i as second draft
+        residual p''(i) = p'(i) - Q(a,i) * min(1, p'(i) / Q(a,i)) # the p(i) that is not captured . 
+        residual Q'(a,i) = Q(a,i) - Q(a,i) * min(1, p'(i) / Q(a,i))
 
         if a,i:
-            accept a with min(1, q(a)/\sum_i P'(a,i))
-            q'(a) = q(a) - \sum_i P'(a,i) * min(1, q(a) / \sum_i P'(a,i))
+            accept a with min(1, p(a)/\sum_i Q'(a,i))
+            p'(a) = p(a) - \sum_i Q'(a,i) * min(1, p(a) / \sum_i Q'(a,i))
         if i,a: 
-            accept a with min(1, q'(a) / \sum_i P'(i,a))
+            accept a with min(1, p'(a) / \sum_i Q'(i,a))
         
-        residual q''(a) = q'(a) - \sum_i P'(i,a) * min(1, q'(a) / \sum_i P'(i,a))
+        residual p''(a) = p'(a) - \sum_i Q'(i,a) * min(1, p'(a) / \sum_i Q'(i,a))
 
         reaching this step means all our drafts are rejected. 
-        sample from q'' and end speculation iteration. 
+        sample from p'' and end speculation iteration. 
         """
         new_node_num = (self.num_nodes - self.ground_truth_len + 1)
         if self.target_kv_len == 0:
@@ -241,7 +323,8 @@ class MyTree(Tree):
         accept_length = len(accept_list)
         if not terminal:
             if torch.isnan(residual).any():
-                 terminal = True
+                terminal = True
+                print ('\nnan detected\n')
             else:
                 self.tokens[accept_length] = residual.multinomial(num_samples=1, replacement=True)
 
@@ -309,7 +392,7 @@ class MyTree(Tree):
         
 
 
-class SpecTreeTest(Tree):
+class MyTreeTest(Tree):
     def __init__(self, 
                  draft_model_engine :GraphInferenceEngine,
                  target_model_engine :GraphInferenceEngineTG,
@@ -379,14 +462,12 @@ class SpecTreeTest(Tree):
         
         total_branch = sum(n_branch_list)
         max_branch = max(n_branch_list)
-        sampling_logits = self.draft_logits[idx_list]
+        assert max_branch <= 2, "max_branch should be less than or equal to 2"
         
-        sampling_q = softmax(sampling_logits / self.temperature, dim=-1)
-        
-            
-            
-        new_tokens_set  = (self.rand[idx_list].log()/sampling_q).topk(k=max_branch).indices
-        
+        # sampling_logits = self.draft_logits[idx_list] # size of sampling_logits (len(idx_list), vocab_size)
+        # sampling_q = softmax(sampling_logits / self.temperature, dim=-1) 
+        # new_tokens_set  = (self.rand[idx_list].log()/sampling_q).topk(k=max_branch).indices # (len(idx_list), max_branch)
+        new_tokens_set = sampling_a_and_i(self.draft_logits[idx_list], self.rand[idx_list], self.temperature).reshape(-1, 2)
             
         
         finished_tokens = 0
@@ -427,19 +508,74 @@ class SpecTreeTest(Tree):
         children = self.Successors[logits_id]
         if len(children) == 0:
             return ChildrenAccept(accept_mark=2, residual=p)
-        
-        for idx, pos in enumerate(children):
+        elif len(children) == 1:
+            for idx, pos in enumerate(children):
 
-            token = self.tokens[pos + (self.ground_truth_len - 1)]
-            q = softmax(draft_logits / self.temperature, dim=-1)
-            r = self.r[pos + (self.ground_truth_len - 1)]
-            if p[token] >= r * q[token]:
-                return ChildrenAccept(accept_mark=0, token=token, position=pos + (self.ground_truth_len - 1), successor_order=idx)
-            else:
-                p = get_residual(p, q)
-                draft_logits[token] = -torch.inf
-        
-        return ChildrenAccept(accept_mark=1, residual=p)
+                token = self.tokens[pos + (self.ground_truth_len - 1)]
+                q = softmax(draft_logits / self.temperature, dim=-1)
+                r = self.r[pos + (self.ground_truth_len - 1)]
+                if p[token] >= r * q[token]:
+                    return ChildrenAccept(accept_mark=0, token=token, position=pos + (self.ground_truth_len - 1), successor_order=idx)
+                else:
+                    p = get_residual(p, q)
+                    draft_logits[token] = -torch.inf
+            
+            return ChildrenAccept(accept_mark=1, residual=p)
+        elif len(children) == 2:
+            q = softmax(draft_logits / self.temperature, dim=-1) # draft probability: (vocab_size,)
+            a = q.argmax() # index of the token with highest draft probability, dtype: int
+            draft_logits[a] = -torch.inf
+            q_ai = q[a]*softmax(draft_logits / self.temperature, dim=-1) # draft probability without 'a': (vocab_size,) 
+            pos0 = children[0]
+            pos1 = children[1]
+            token0 = self.tokens[pos0 + (self.ground_truth_len - 1)]
+            token1 = self.tokens[pos1 + (self.ground_truth_len - 1)]
+
+            p_res = torch.zeros_like(p)
+            q_ai_res = torch.zeros_like(p)
+            p_res_res = torch.zeros_like(p)
+            q_ia_res = torch.zeros_like(p)
+            
+            # first, try to accept as much i as possible
+            if a== token1: # i,a
+                i = token0 
+                r = self.r[pos0 + (self.ground_truth_len - 1)]
+                if p[i] > r * q[i]: # if r < p(i) / Q(i,a)
+                    # return (pos0 + (self.ground_truth_len - 1), None)
+                    return ChildrenAccept(accept_mark=0, token=i, position=pos0 + (self.ground_truth_len - 1), successor_order=0)
+            # every index of q_res that is not a
+            not_a = torch.arange(p.size(0),device=self.device)!=a
+            p_res[not_a] = (p[not_a]-q[not_a]).relu_() # residual draft
+            q_ia_res[not_a] = (q[not_a]-p[not_a]).relu_() # residual target
+
+            if a == token0: # a,i
+                i = token1
+                r = self.r[pos1 + (self.ground_truth_len - 1)]
+                if p_res[i] > r * q_ai[i]: # if r < p'(i) / Q(a,i)
+                    # return (pos1 + (self.ground_truth_len - 1), None)
+                    return ChildrenAccept(accept_mark=0, token=i, position=pos1 + (self.ground_truth_len - 1), successor_order=1)
+            p_res_res[not_a] = (p_res[not_a] - q_ai[not_a]).relu_()
+            q_ai_res[not_a] = (q_ai[not_a] - p_res[not_a]).relu_()
+
+            # second, accept 'a' as much as possible
+            if a == token0: # a,i
+                r = self.r[pos0 + (self.ground_truth_len - 1)]
+                if p[a] > r * q_ai_res.sum():
+                    # return (pos0 + (self.ground_truth_len - 1), None)
+                    return ChildrenAccept(accept_mark=0, token=a, position=pos0 + (self.ground_truth_len - 1), successor_order=0)
+            p_res[a] = (p[a] - q_ai_res.sum()).relu_()
+            if a == token1: # i,a 
+                r = self.r[pos1 + (self.ground_truth_len - 1)]
+                if p_res[a] > r * q_ia_res.sum():
+                    # return (pos1 + (self.ground_truth_len - 1), None)
+                    return ChildrenAccept(accept_mark=0, token=a, position=pos1 + (self.ground_truth_len - 1), successor_order=1)
+            p_res_res[a] = (p_res[a] - q_ia_res.sum()).relu_()
+            p_res_res /= (p_res_res.sum(dim = -1).unsqueeze(-1))
+            # return (-1, p_res_res)
+            return ChildrenAccept(accept_mark=1, residual=p_res_res)
+
+        else: 
+            raise NotImplementedError("Not implemented for more than 2 children")  
 
 
         
