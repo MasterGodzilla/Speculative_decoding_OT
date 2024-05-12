@@ -1,9 +1,9 @@
 {
-    "acceptance_rate_vector": "binary_accept_vector.pt",
-    "max_depth": 16,
+    "acceptance_rate_vector": "hub_accept_rates/llama-160m-7b-chat-T1-P1-cnn.pt",
+    "max_depth": 32,
     "max_budget": 16,
-    "draft_time": 0.3,
-    "valid_budget": [1, 2, 4, 8, 16],
-    "target_time":[10, 10, 10, 12, 14],
-    "dst": "binary_tree.pt"
+    "draft_time": 0,
+    "valid_budget": [4],
+    "target_time":[10],
+    "dst": "growmaps/biseq_trees/llama-7b-160m/T1-P1-cnn-4.pt"
 }

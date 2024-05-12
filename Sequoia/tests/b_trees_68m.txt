@@ -1,0 +1,74 @@
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+3
+
+nan detected
+
+total time :404.33607s, latency :0.01698s, decoding step: 23812, large model step: 14738, 1.6156873388519473
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+3
+total time :407.12819s, latency :0.01701s, decoding step: 23928, large model step: 14880, 1.6080645161290323
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+7
+total time :336.28460s, latency :0.01459s, decoding step: 23051, large model step: 11605, 1.9862990090478243
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+7
+total time :351.04621s, latency :0.01464s, decoding step: 23974, large model step: 12212, 1.96315099901736
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+15
+
+nan detected
+
+
+nan detected
+
+total time :312.73790s, latency :0.01363s, decoding step: 22950, large model step: 10220, 2.2455968688845402
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+15
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+total time :327.38340s, latency :0.01371s, decoding step: 23887, large model step: 10807, 2.2103266401406496
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+
+nan detected
+
+total time :298.71972s, latency :0.01336s, decoding step: 22354, large model step: 9302, 2.4031391098688455
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+total time :330.08494s, latency :0.01364s, decoding step: 24207, large model step: 10338, 2.341555426581544
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+3
+total time :403.63148s, latency :0.01713s, decoding step: 23562, large model step: 14729, 1.5997012696041821
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+3
+total time :411.93440s, latency :0.01720s, decoding step: 23954, large model step: 15061, 1.5904654405417966
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+7
+total time :346.13975s, latency :0.01455s, decoding step: 23793, large model step: 11997, 1.9832458114528633
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+72.3
+total time :351.84782s, latency :0.01466s, decoding step: 23994, large model step: 12204, 1.9660766961651917
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+15
+total time :322.00621s, latency :0.01366s, decoding step: 23576, large model step: 10665, 2.210595405532114
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+15
+total time :334.29037s, latency :0.01364s, decoding step: 24500, large model step: 11158, 2.1957340025094103
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+total time :321.45722s, latency :0.01381s, decoding step: 23280, large model step: 10076, 2.3104406510520046
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+total time :339.59546s, latency :0.01374s, decoding step: 24712, large model step: 10675, 2.314941451990632

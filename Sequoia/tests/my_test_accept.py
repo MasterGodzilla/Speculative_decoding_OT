@@ -81,6 +81,8 @@ def simulation_stochastic(target_model : GraphInferenceEngineTG, draft_model: Gr
     branch_prob = branch_prob / branch_prob.sum(dim=-1) 
     accumated_prob = branch_prob.cumsum(dim=-1)
     output_branch_prob[1:] = branch_prob
+    # added code
+    output_branch_prob[-1] = 0
     print(output_branch_prob)
     torch.save(output_branch_prob, args.dst)
     return num_decoding_steps / num_large_model_steps
