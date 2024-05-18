@@ -49,7 +49,6 @@ except:
     from utils_c import *
     from choices import *
     from utils import prepare_logits_processor
-top_k=10
 
 # Copied from transformers.models.bart.modeling_bart._make_causal_mask
 def _make_causal_mask(
@@ -495,9 +494,11 @@ class Model(nn.Module):
             param.requires_grad = False
 
 
-    def init_tree(self):
-        self.tree = mc_sim_7b_63
+    def init_tree(self, tree_choices):
+        self.tree = tree_choices
         self.tree_buffer=generate_tree_buffers(self.tree,self.embed_tokens.weight.device)
+        self.topk = max(max(x) for x in self.tree) + 1
+        print ("topk =",self.topk)
 
 
     def reset(self):
@@ -705,23 +706,41 @@ class Model(nn.Module):
     #
     #     return  sampled_indices,sampled_probs
 
-    def sample(self,logits, logits_processor,k=1, replacement=False):
+    def sample(self,logits, logits_processor,k=1,
+               mode=None):
+        if not (mode == 'RRS' or mode == 'RRS_wo_replacement' or mode == 'spechub'):
+            raise NotImplementedError(f"Mode {mode} not implemented")
         logits = logits_processor(None, logits)
         probabilities = torch.nn.functional.softmax(logits, dim=1)
-        sampled_indices = torch.multinomial(probabilities, k, replacement=False)
-        sampled_probs = torch.gather(probabilities, 1, sampled_indices)
 
-        cumulative_sum = torch.cumsum(sampled_probs, dim=1)
-        cumulative_sum = torch.cat(
-            (torch.zeros(cumulative_sum.shape[0], 1, device=cumulative_sum.device), cumulative_sum[:, :-1]), dim=-1)
+        if mode == 'RRS':
+            sampled_indices = torch.multinomial(probabilities, k, replacement=True)
+            sampled_probs = torch.gather(probabilities, 1, sampled_indices)
+            return sampled_indices, sampled_probs, probabilities
+        elif mode == 'RRS_wo_replacement':
+            sampled_indices = torch.multinomial(probabilities, k, replacement=False)
+            sampled_probs = torch.gather(probabilities, 1, sampled_indices)
 
-        sampled_probs = sampled_probs / (1 - cumulative_sum)
-        sampled_probs[torch.isinf(sampled_probs)] = -1
-        sampled_probs[torch.isnan(sampled_probs)] = -1
+            cumulative_sum = torch.cumsum(sampled_probs, dim=1)
+            cumulative_sum = torch.cat(
+                (torch.zeros(cumulative_sum.shape[0], 1, device=cumulative_sum.device), cumulative_sum[:, :-1]), dim=-1)
 
-        sampled_probs = torch.clamp(sampled_probs, min=0.0, max=1.0)
+            sampled_probs = sampled_probs / (1 - cumulative_sum)
+            sampled_probs[torch.isinf(sampled_probs)] = -1
+            sampled_probs[torch.isnan(sampled_probs)] = -1
 
-        return sampled_indices, sampled_probs,probabilities
+            sampled_probs = torch.clamp(sampled_probs, min=0.0, max=1.0)
+
+            return sampled_indices, sampled_probs,probabilities
+        elif mode == 'spechub':
+            first = torch.multinomial(probabilities, 1, replacement=True)
+            a = torch.argmax(probabilities, dim=1, keepdim=True)
+            mask = (a==first)
+
+            second = torch.where(mask, torch.multinomial(probabilities, 1, replacement=True), a)
+            sampled_indices = torch.cat((first, second), dim=1)
+            sampled_probs = torch.gather(probabilities, 1, sampled_indices)
+            return sampled_indices, sampled_probs,probabilities
 
         # if replacement:
         #     sampled_indices = torch.multinomial(probabilities, k, replacement=True)
@@ -759,7 +778,8 @@ class Model(nn.Module):
         #     return sampled_indices, sampled_probs
 
     @torch.no_grad()
-    def topK_genrate(self, hidden_states, input_ids, head, logits_processor,max_length=4, use_cache=True):
+    def topK_genrate(self, hidden_states, input_ids, head, logits_processor,max_length=4, use_cache=True,
+                     mode=None):
         # test_=input_ids
         # input_ids = torch.tensor([state[1:]])
         input_ids = input_ids[:, 1:]
@@ -790,9 +810,9 @@ class Model(nn.Module):
 
             for i in range(len(self.tree_buffer['tree_indices'])):
                 if logits_processor is not None:
-                    topk_index,topk_prob,op=self.sample(last_headout,logits_processor,k=top_k,)
+                    topk_index,topk_prob,op=self.sample(last_headout,logits_processor,k=self.topk,mode=mode)
                 else:
-                    top=torch.topk(last_headout, top_k, dim=-1)
+                    top=torch.topk(last_headout, self.topk, dim=-1)
                     topk_index,topk_prob = top.indices,top.values
                     op=None
 
@@ -829,9 +849,9 @@ class Model(nn.Module):
                 #print(select_index)
 
             if logits_processor is not None:
-                topk_index,topk_prob,op=self.sample(last_headout,logits_processor,k=top_k,)
+                topk_index,topk_prob,op=self.sample(last_headout,logits_processor,k=self.topk,mode=mode)
             else:
-                top = torch.topk(last_headout, top_k, dim=-1)
+                top = torch.topk(last_headout, self.topk, dim=-1)
                 topk_index, topk_prob = top.indices, top.values
                 op=None
             ss_token.append(topk_index)

@@ -88,6 +88,7 @@ def pad_path(path: List[int], length: int, pad_value: int = -2) -> List[int]:
 
 
 def generate_tree_buffers(tree_choices, device="cuda"):
+    TOPK = max([max(x) for x in tree_choices]) + 1
     sorted_tree_choices = sorted(tree_choices, key=lambda x: (len(x), x))
     tree_len = len(sorted_tree_choices) + 1
 
@@ -227,9 +228,10 @@ def generate_tree_buffers(tree_choices, device="cuda"):
     return tree_buffers
 
 
-def initialize_tree(input_ids, model, tree_attn_mask, past_key_values, logits_processor):
+def initialize_tree(input_ids, model, tree_attn_mask, past_key_values, logits_processor,mode=None):
     tree_logits, outputs, logits, hidden_state, sample_token = model(
-        input_ids, past_key_values=past_key_values, output_orig=True, logits_processor=logits_processor
+        input_ids, past_key_values=past_key_values, output_orig=True, logits_processor=logits_processor, 
+        mode=mode,
     )
     model.base_model.model.tree_mask = tree_attn_mask
     return tree_logits, logits, hidden_state, sample_token
@@ -325,7 +327,8 @@ def evaluate_posterior(
         op,
         p_indices,
         tree_candidates,
-        b_indices
+        b_indices,
+        mode=None,
 ) -> Tuple[torch.Tensor, int]:
     """
     Evaluate the posterior probabilities of the candidates based on the provided logits and choose the best candidate.
@@ -375,27 +378,31 @@ def evaluate_posterior(
             gt_logits = logits_processor(None, gt_logits)[0]
             gtp = torch.softmax(gt_logits, dim=0)
             candidates_set = []
-            for j in range(candidates.shape[0]):
-                if is_eq[j]:
-                    x = candidates[j, i]
+
+            if mode == 'spechub':
+                two_cands = []
+                for j in range(candidates.shape[0]):
+                    if is_eq[j]:
+                        two_cands.append(candidates[j, i], j)
+                if len(two_cands) == 1:
+                    r = random.random()
+                    x = two_cands[0][0]
                     xi = x.item()
                     if xi in candidates_set or xi == -1:
                         continue
                     candidates_set.append(xi)
-                    r = random.random()
                     px = gtp[xi]
-                    qx = cart_candidates_prob[j, i]
+                    qx = cart_candidates_prob[two_cands[0][1], i]
                     if qx <= 0:
                         continue
                     acp = px / qx
                     if r <= acp:
                         accept_cand = torch.cat((accept_cand, x[None]), dim=0)
                         accept_length += 1
-                        best_candidate = j
-                        break
+                        best_candidate = two_cands[0][1]
                     else:
-                        q = op[i - 1][p_indices[j][i]].clone()
-                        b = b_indices[j][i]
+                        q = op[i - 1][p_indices[two_cands[0][1]][i]].clone()
+                        b = b_indices[two_cands[0][1]][i]
                         if len(b) > 0:
                             mask = tree_candidates[0][b]
                             q[mask] = 0
@@ -404,6 +411,95 @@ def evaluate_posterior(
                         gtp[gtp < 0] = 0
                         gtp = gtp / gtp.sum()
                         adjustflag = True
+                elif len(two_cands) == 2:
+                    """two drafts:    
+                        We verify sampling the pair of top-1 and any other index. 
+                        For example, if 'a' is the token with highest probability, we sample the pair (a,i) where i is any other token
+                        with Q(i,a) = q(i) and Q(a,i) = q(a) * q(i) / (1-q(a))
+                        
+                        For verification, give target distribution p, and sample (a,i) or (i,a) ~ Q, 
+                        if i,a: 
+                            accept i with min (1,p(i) / Q(i,a)) # accept as much i as first draft as possible
+                        residual p'(i) = p(i) - Q(i,a) * min (1,p(i) / Q(i,a)) # leftover p(i) that is not captured by first draft
+                        residual Q'(i,a) = Q(i,a) - Q(i,a) * min (1,p(i) / Q(i,a))
+                        if a,i:
+                            accept i with min(1, p'(i) / Q(a,i)) # accept i as second draft
+                        residual p''(i) = p'(i) - Q(a,i) * min(1, p'(i) / Q(a,i)) # the p(i) that is not captured . 
+                        residual Q'(a,i) = Q(a,i) - Q(a,i) * min(1, p'(i) / Q(a,i))
+
+                        if a,i:
+                            accept a with min(1, p(a)/\sum_i Q'(a,i))
+                            p'(a) = p(a) - \sum_i Q'(a,i) * min(1, p(a) / \sum_i Q'(a,i))
+                        if i,a: 
+                            accept a with min(1, p'(a) / \sum_i Q'(i,a))
+                        
+                        return residual p''(a) = p'(a) - \sum_i Q'(i,a) * min(1, p'(a) / \sum_i Q'(i,a))"""
+                    x1 = two_cands[0][0]
+                    x2 = two_cands[1][0]
+                    q = op[i - 1][p_indices[two_cands[0][1]][i]].clone()
+                    a = torch.argmax(q)
+                    def residual(p,q, a):
+                        pp = torch.max(torch.zeros_like(p), p - q) * (torch.arange(len(p)) != a).float()
+                        qp = torch.max(torch.zeros_like(q), q - p) * (torch.arange(len(q)) != a).float()
+                        return pp, qp
+                    if x2 == a:
+                        px1 = gtp[x1.item()]
+                        qx1 = cart_candidates_prob[two_cands[0][1], i]
+                        acp1 = px1 / qx1
+                        r = random.random()
+                        if r <= acp1:
+                            accept_cand = torch.cat((accept_cand, x1[None]), dim=0)
+                            accept_length += 1
+                            best_candidate = two_cands[0][1]
+                            continue
+                    gtp, q_ia = residual(gtp, q, a)
+                    if x1 == a:
+                        px2 = gtp[x2.item()]
+                        # q_ai = q(a) * q(i) / (1-q(a))
+                        qx2 = q[a] * q[x2.item()] / (1 - q[a])
+                        acp2 = px2 / qx2
+                        r = random.random()
+                        if r <= acp2:
+                            accept_cand = torch.cat((accept_cand, x2[None]), dim=0)
+                            accept_length += 1
+                            best_candidate = two_cands[1][1]
+                            continue
+
+                    
+                else:
+                    raise ValueError('spechub only supports two candidates')
+            elif mode == 'RRS_wo_replacement' or mode == 'RRS':
+
+                for j in range(candidates.shape[0]):
+                    if is_eq[j]:
+                        x = candidates[j, i]
+                        xi = x.item()
+                        if xi in candidates_set or xi == -1:
+                            continue
+                        candidates_set.append(xi)
+                        r = random.random()
+                        px = gtp[xi]
+                        qx = cart_candidates_prob[j, i]
+                        if qx <= 0:
+                            continue
+                        acp = px / qx
+                        if r <= acp:
+                            accept_cand = torch.cat((accept_cand, x[None]), dim=0)
+                            accept_length += 1
+                            best_candidate = j
+                            break
+                        else:
+                            q = op[i - 1][p_indices[j][i]].clone()
+                            b = b_indices[j][i]
+                            if len(b) > 0:
+                                mask = tree_candidates[0][b]
+                                if mode == 'RRS_wo_replacement':
+                                    q[mask] = 0
+                                q = q / q.sum()
+                            gtp = gtp - q
+                            gtp[gtp < 0] = 0
+                            gtp = gtp / gtp.sum()
+                            adjustflag = True
         if adjustflag and accept_length != candidates.shape[1]:
             sample_p = gtp
         else:
@@ -428,7 +524,8 @@ def update_inference_inputs(
         model,
         hidden_state,
         hidden_state_new,
-        sample_p
+        sample_p,
+        mode
 ):
     prev_input_len = input_ids.shape[1]
     # Map the best candidate indices to the original indices in the sequence
@@ -465,7 +562,8 @@ def update_inference_inputs(
     # hidden_state = torch.cat((hidden_state, accept_hidden_state_new), dim=1)
     tree_logits = model.ea_layer.topK_genrate(accept_hidden_state_new,
                                               input_ids=torch.cat((input_ids, token.to(input_ids.device)), dim=1),
-                                              head=model.base_model.lm_head, logits_processor=logits_processor)
+                                              head=model.base_model.lm_head, logits_processor=logits_processor, 
+                                              mode=mode)
 
     new_token += accept_length + 1
 

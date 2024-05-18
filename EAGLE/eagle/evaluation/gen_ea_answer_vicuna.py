@@ -22,7 +22,7 @@ from ..model.utils import *
 from ..model.choices import *
 
 
-def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None, max_steps=512):
+def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None, max_steps=512,mode=None):
     assert input_ids.shape[0] == 1, "Only support batch size 1 for now!!"
     # Avoid modifying the input_ids in-place
     input_ids = input_ids.clone()
@@ -59,7 +59,8 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None,
     input_len = input_ids.shape[1]
     reset_tree_mode(model)
     tree_logits, logits, hidden_state, sample_token = initialize_tree(
-        input_ids, model, tree_buffers["tree_attn_mask"], past_key_values, logits_processor
+        input_ids, model, tree_buffers["tree_attn_mask"], past_key_values, logits_processor,
+        mode=mode,
     )
     new_token = 0
 
@@ -81,7 +82,8 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None,
         )
         best_candidate, accept_length, sample_p = evaluate_posterior(
             logits, candidates, logits_processor, cart_candidates_prob, tree_logits[2], tree_buffers["p_indices"],
-            tree_candidates, tree_buffers["b_indices"]
+            tree_candidates, tree_buffers["b_indices"],
+            mode=mode
         )
         input_ids, tree_logits, new_token, hidden_state, sample_token = update_inference_inputs(
             input_ids,
@@ -98,7 +100,8 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None,
             model,
             hidden_state,
             hidden_state_new,
-            sample_p
+            sample_p,
+            mode=mode,
         )
         if tokenizer.eos_token_id in input_ids[0, input_len:].tolist():
             break
@@ -124,6 +127,7 @@ def run_eval(
         max_gpu_memory,
         temperature,
         tree_choices,
+        mode=None,
 ):
     questions = load_questions(question_file, question_begin, question_end)
     # random shuffle the questions to balance the loading
@@ -159,6 +163,7 @@ def run_eval(
                 max_gpu_memory,
                 temperature,
                 tree_choices,
+                mode=mode
             )
         )
 
@@ -179,6 +184,7 @@ def get_model_answers(
         max_gpu_memory,
         temperature,
         tree_choices,
+        mode=None,
 ):
     # temperature = 0.0
 
@@ -188,7 +194,8 @@ def get_model_answers(
         torch_dtype=torch.float16,
         low_cpu_mem_usage=True,
         # load_in_8bit=True,
-        device_map="auto"
+        device_map="auto",
+        tree_choices=tree_choices,
     )
 
     tokenizer = model.get_tokenizer()
@@ -232,6 +239,7 @@ def get_model_answers(
                 tokenizer,
                 tree_choices,
                 logits_processor,
+                mode=mode,
             )
             torch.cuda.synchronize()
             total_time = time.time() - start_time
@@ -298,6 +306,7 @@ def get_model_answers(
                         tokenizer,
                         tree_choices,
                         logits_processor,
+                        mode=mode
                     )
                     torch.cuda.synchronize()
                     total_time = time.time() - start_time
@@ -435,6 +444,13 @@ if __name__ == "__main__":
         default="mc_sim_7b_63",
     )
 
+    parser.add_argument(
+        '--mode',
+        type=str,
+        default='RRS_wo_replacement',
+        help='The mode of tree decoding. RRS_wo_replacement, RRS, and spechub',
+    )
+
     args = parser.parse_args()
 
     args.model_id = args.model_id + "-temperature-" + str(args.temperature)
@@ -468,6 +484,7 @@ if __name__ == "__main__":
 
         args.temperature,
         args.tree_choices,
+        args.mode,
     )
 
     reorg_answer_file(answer_file)

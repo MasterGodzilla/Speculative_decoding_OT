@@ -27,6 +27,7 @@ class EaModel(nn.Module):
             base_model,
             base_model_name_or_path,
             ea_model_path,
+            tree_choices=None,
     ):
 
         super().__init__()
@@ -61,7 +62,7 @@ class EaModel(nn.Module):
         else:
             self.ea_layer.diff_device = False
         self.ea_layer.to(self.base_model.dtype).to(device)
-        self.ea_layer.init_tree()
+        self.ea_layer.init_tree(tree_choices)
 
     def get_tokenizer(self):
         """Get the tokenizer of the base model.
@@ -77,8 +78,10 @@ class EaModel(nn.Module):
             Type="LLaMA",
             base_model_path=None,
             ea_model_path=None,
+            tree_choices=None,
             **kwargs,
     ):
+        print ("from_pretrained:", tree_choices)
         #assert Type=="LLaMA" or "Mixtral"
         Type=AutoConfig.from_pretrained(base_model_path).architectures[0]
         if Type=='LlamaForCausalLM':
@@ -96,7 +99,8 @@ class EaModel(nn.Module):
         model = cls(
             base_model,
             base_model_path,
-            configpath
+            configpath,
+            tree_choices=tree_choices,
         )
         load_model_path=os.path.join(ea_model_path, "pytorch_model.bin")
         if not os.path.exists(load_model_path):
@@ -116,7 +120,8 @@ class EaModel(nn.Module):
             output_orig=False,
             position_ids=None,
             init=True,
-            logits_processor=None
+            logits_processor=None,
+            mode=None
     ):
 
         with torch.inference_mode():
@@ -142,7 +147,7 @@ class EaModel(nn.Module):
             input_ids = torch.cat((input_ids, token.to(input_ids.device)), dim=1)
             # Clone the output hidden states
 
-            ea_logits = self.ea_layer.topK_genrate(hidden_states, input_ids, self.base_model.lm_head, logits_processor)
+            ea_logits = self.ea_layer.topK_genrate(hidden_states, input_ids, self.base_model.lm_head, logits_processor, mode=mode)
             if output_orig:
                 return ea_logits, outputs, orig, hidden_states, token
             return ea_logits, hidden_states, token

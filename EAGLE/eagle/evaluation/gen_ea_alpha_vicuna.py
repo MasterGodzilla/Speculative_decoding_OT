@@ -31,7 +31,8 @@ from ..model.kv_cache import initialize_past_key_values
 from ..model.choices import *
 
 
-def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None , max_steps = 512):
+def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None , max_steps = 512,
+               mode=None):
     assert input_ids.shape[0] == 1, "Only support batch size 1 for now!!"
     # Avoid modifying the input_ids in-place
     input_ids = input_ids.clone()
@@ -80,7 +81,8 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None 
                 tree_buffers["tree_indices"],
                 tree_buffers["retrieve_indices"],
                 sample_token,
-                logits_processor
+                logits_processor, 
+                mode=mode
             )
         logits, hidden_state_new,outputs = tree_decoding(
                 model,
@@ -92,7 +94,8 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None 
             )
         best_candidate, accept_length,sample_p = evaluate_posterior(
                 logits, candidates, logits_processor, cart_candidates_prob,alpha,alpha_num,tree_logits[2], tree_buffers["p_indices"],
-            tree_candidates, tree_buffers["b_indices"]
+            tree_candidates, tree_buffers["b_indices"],
+            mode=mode
             )
         input_ids, tree_logits, new_token,hidden_state,sample_token = update_inference_inputs(
                 input_ids,
@@ -134,6 +137,7 @@ def run_eval(
     max_gpu_memory,
     temperature,
     tree_choices,
+    mode = None
 ):
     questions = load_questions(question_file, question_begin, question_end)
     # random shuffle the questions to balance the loading
@@ -169,6 +173,7 @@ def run_eval(
                 max_gpu_memory,
                 temperature,
                 tree_choices,
+                mode=mode,
             )
         )
 
@@ -189,18 +194,20 @@ def get_model_answers(
     max_gpu_memory,
     temperature,
     tree_choices,
+    mode=None,
 ):
     #temperature = 0.0
 
 
-
+    print ("get_model_answers:", tree_choices)
     model = EaModel.from_pretrained(
         base_model_path = base_model_path,
         ea_model_path = ea_model_path,
         torch_dtype=torch.float16,
         low_cpu_mem_usage=True,
         # load_in_8bit=True,
-        device_map="auto"
+        device_map="auto", 
+        tree_choices=tree_choices,
     )
 
     tokenizer = model.get_tokenizer()
@@ -250,6 +257,7 @@ def get_model_answers(
                 tokenizer,
                 tree_choices,
                 logits_processor,
+                mode=mode,
             )
             torch.cuda.synchronize()
             total_time = time.time() - start_time
@@ -319,6 +327,7 @@ def get_model_answers(
                         tokenizer,
                         tree_choices,
                         logits_processor,
+                        mode=mode,
                     )
                     torch.cuda.synchronize()
                     total_time = time.time() - start_time
@@ -458,6 +467,13 @@ if __name__ == "__main__":
         default="mc_sim_7b_63",
     )
 
+    parser.add_argument(
+        '--mode',
+        type=str,
+        default='RRS_wo_replacement',
+        help='The mode of tree sampling, including RRS, RRS_wo_replacement, and spechub'
+    )
+
 
 
 
@@ -474,7 +490,7 @@ if __name__ == "__main__":
     if args.answer_file:
         answer_file = args.answer_file
     else:
-        answer_file = f"{args.bench_name}/{args.model_id}.jsonl"
+        answer_file = f"{args.bench_name}/{args.model_id}-{args.mode}.jsonl"
 
     print(f"Output to {answer_file}")
 
@@ -496,6 +512,7 @@ if __name__ == "__main__":
 
         args.temperature,
         args.tree_choices,
+        mode = args.mode
     )
 
     reorg_answer_file(answer_file)
