@@ -101,21 +101,23 @@ def generate_tree_buffers(tree_choices, device="cuda"):
             depth_counts.append(0)
         depth_counts[depth - 1] += 1
         prev_depth = depth
+    print ("depth_counts:",depth_counts)
 
-    tree_attn_mask = torch.eye(tree_len, tree_len)
+    tree_attn_mask = torch.eye(tree_len, tree_len) 
     tree_attn_mask[:, 0] = 1
     start = 0
     for i in range(len(depth_counts)):
         for j in range(depth_counts[i]):
             cur_tree_choice = sorted_tree_choices[start + j]
+            ancestor_idx = []
             # retrieve ancestor position
             if len(cur_tree_choice) == 1:
                 continue
-            ancestor_idx = []
             for c in range(len(cur_tree_choice) - 1):
                 ancestor_idx.append(sorted_tree_choices.index(cur_tree_choice[:c + 1]) + 1)
             tree_attn_mask[j + start + 1, ancestor_idx] = 1
         start += depth_counts[i]
+    print ("tree_attn_mask:",tree_attn_mask)
 
     tree_indices = torch.zeros(tree_len, dtype=torch.long)
     p_indices = [0 for _ in range(tree_len - 1)]
@@ -380,39 +382,7 @@ def evaluate_posterior(
             candidates_set = []
 
             if mode == 'spechub':
-                two_cands = []
-                for j in range(candidates.shape[0]):
-                    if is_eq[j]:
-                        two_cands.append(candidates[j, i], j)
-                if len(two_cands) == 1:
-                    r = random.random()
-                    x = two_cands[0][0]
-                    xi = x.item()
-                    if xi in candidates_set or xi == -1:
-                        continue
-                    candidates_set.append(xi)
-                    px = gtp[xi]
-                    qx = cart_candidates_prob[two_cands[0][1], i]
-                    if qx <= 0:
-                        continue
-                    acp = px / qx
-                    if r <= acp:
-                        accept_cand = torch.cat((accept_cand, x[None]), dim=0)
-                        accept_length += 1
-                        best_candidate = two_cands[0][1]
-                    else:
-                        q = op[i - 1][p_indices[two_cands[0][1]][i]].clone()
-                        b = b_indices[two_cands[0][1]][i]
-                        if len(b) > 0:
-                            mask = tree_candidates[0][b]
-                            q[mask] = 0
-                            q = q / q.sum()
-                        gtp = gtp - q
-                        gtp[gtp < 0] = 0
-                        gtp = gtp / gtp.sum()
-                        adjustflag = True
-                elif len(two_cands) == 2:
-                    """two drafts:    
+                """two drafts:    
                         We verify sampling the pair of top-1 and any other index. 
                         For example, if 'a' is the token with highest probability, we sample the pair (a,i) where i is any other token
                         with Q(i,a) = q(i) and Q(a,i) = q(a) * q(i) / (1-q(a))
@@ -434,40 +404,131 @@ def evaluate_posterior(
                             accept a with min(1, p'(a) / \sum_i Q'(i,a))
                         
                         return residual p''(a) = p'(a) - \sum_i Q'(i,a) * min(1, p'(a) / \sum_i Q'(i,a))"""
+                two_cands = []
+                for j in range(candidates.shape[0]):
+                    if is_eq[j]:
+                        x = candidates[j, i]
+                        xi = x.item()
+                        if xi in candidates_set or xi == -1:
+                            continue
+                        candidates_set.append(xi)
+                        two_cands.append((candidates[j, i], j))
+                if len(two_cands) == 1:
+                    r = random.random()
+                    x = two_cands[0][0]
+                    px = gtp[xi]
+                    qx = cart_candidates_prob[two_cands[0][1], i]
+                    if qx <= 0:
+                        continue
+                    acp = px / qx
+                    if r <= acp:
+                        accept_cand = torch.cat((accept_cand, x[None]), dim=0)
+                        accept_length += 1
+                        best_candidate = two_cands[0][1]
+                    else:
+                        q = op[i - 1][p_indices[two_cands[0][1]][i]].clone()
+                        b = b_indices[two_cands[0][1]][i]
+                        if len(b) > 0:
+                            mask = tree_candidates[0][b]
+                            q[mask] = 0
+                            q = q / q.sum()
+                        gtp = gtp - q
+                        gtp[gtp < 0] = 0
+                        gtp = gtp / gtp.sum()
+                        adjustflag = True
+                elif len(two_cands) == 2:
                     x1 = two_cands[0][0]
                     x2 = two_cands[1][0]
-                    q = op[i - 1][p_indices[two_cands[0][1]][i]].clone()
-                    a = torch.argmax(q)
+                    
+                    q = op[i - 1][p_indices[two_cands[0][1]][i]].clone() # shape (vocab_size)
+                    a = torch.argmax(q) # shape (1)
+                    # to avoid numerical issue, if p[a] > 1-1e-4, we directly accept a
+                    if gtp[a] > 1- 1e-4:
+                        accept_cand = torch.cat((accept_cand, a[None]), dim=0)
+                        accept_length += 1
+                        best_candidate = two_cands[0][1] if x1 == a else two_cands[1][1]
+                        # print ('directly accept a',a.item())
+                        continue
+                    # print ("x1",x1.item(),"x2",x2, 'a', a)
+                    # print ('q[a]',q[a].item(),'q[x1]',q[x1.item()].item(),'q[x2]',q[x2.item()].item())
+                    # print ("gtp[x1]",gtp[x1.item()].item(),"gtp[x2]",gtp[x2.item()].item(),"gtp[a]",gtp[a].item())
                     def residual(p,q, a):
-                        pp = torch.max(torch.zeros_like(p), p - q) * (torch.arange(len(p)) != a).float()
-                        qp = torch.max(torch.zeros_like(q), q - p) * (torch.arange(len(q)) != a).float()
+                        pp = torch.max(torch.zeros_like(p,device=p.device), p - q)
+                        pp[a] = p[a]
+                        qp = torch.max(torch.zeros_like(q, device=q.device), q - p)
+                        qp[a] = q[a]
+                        # print ('pp sum',pp.sum(),"qp sum",qp.sum())
                         return pp, qp
+                    
+                        
                     if x2 == a:
                         px1 = gtp[x1.item()]
-                        qx1 = cart_candidates_prob[two_cands[0][1], i]
-                        acp1 = px1 / qx1
+                        # q_ia = q(i)
+                        qx1 = cart_candidates_prob[two_cands[0][1], i] 
+                        acp = px1 / qx1
                         r = random.random()
-                        if r <= acp1:
+                        if r <= acp:
                             accept_cand = torch.cat((accept_cand, x1[None]), dim=0)
                             accept_length += 1
                             best_candidate = two_cands[0][1]
                             continue
                     gtp, q_ia = residual(gtp, q, a)
+                    q_ia[a] = 0
+                    # print ("after ia i, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ('q_ia sum',q_ia.sum())
+                    def get_q_ai(q,a):
+                        """
+                        use log and softmax to avoid numerical instability
+                        """
+                        logq = torch.log(q+5e-5)
+                        logq[a] = - torch.inf
+                        q_normalized = torch.softmax(logq, dim=0)
+                        return q[a]*q_normalized
+                    q_ai = get_q_ai(q,a)
                     if x1 == a:
                         px2 = gtp[x2.item()]
                         # q_ai = q(a) * q(i) / (1-q(a))
-                        qx2 = q[a] * q[x2.item()] / (1 - q[a])
-                        acp2 = px2 / qx2
+                        qx2 = q_ai[x2.item()]
+                        acp = px2 / qx2
                         r = random.random()
-                        if r <= acp2:
+                        if r <= acp or qx2.isnan():
                             accept_cand = torch.cat((accept_cand, x2[None]), dim=0)
                             accept_length += 1
                             best_candidate = two_cands[1][1]
                             continue
-
+                    # print ('q_ai sum',q_ai.sum(), 'q[a]', q[a].item())
+                    gtp, q_ai = residual(gtp, q_ai, a)
+                    # print ("after ai i, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ('q_ai sum',q_ai.sum())
                     
+                    if x1 == a:
+                        pa = gtp[a]
+                        acp = pa / (q_ai.sum())
+                        r = random.random()
+                        # print ('acp', acp, 'ai a: r', r)
+                        if r <= acp:
+                            accept_cand = torch.cat((accept_cand, a[None]), dim=0)
+                            accept_length += 1
+                            best_candidate = two_cands[0][1]
+                            continue
+                    gtp[a] = max(gtp[a] - q_ai.sum(), 0)
+                    # print ("after ai a, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    if x2 == a:
+                        pa = gtp[a]
+                        acp = pa / q_ia.sum()
+                        r = random.random()
+                        if r <= acp or q_ia.sum() == 0 or q_ia.sum().isnan():
+                            accept_cand = torch.cat((accept_cand, a[None]), dim=0)
+                            accept_length += 1
+                            best_candidate = two_cands[1][1]
+                            continue
+                    gtp[a] = max(gtp[a] - q_ia.sum(), 0)
+                    # print ("after ia a, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ("gtp.sum()",gtp.sum())
+                    gtp = gtp / gtp.sum()
+                    adjustflag = True
                 else:
-                    raise ValueError('spechub only supports two candidates')
+                    raise ValueError(f'spechub only supports two candidates, got {len(two_cands)} candidates.')
             elif mode == 'RRS_wo_replacement' or mode == 'RRS':
 
                 for j in range(candidates.shape[0]):
@@ -488,18 +549,18 @@ def evaluate_posterior(
                             accept_length += 1
                             best_candidate = j
                             break
-                        else:
-                            q = op[i - 1][p_indices[j][i]].clone()
-                            b = b_indices[j][i]
-                            if len(b) > 0:
-                                mask = tree_candidates[0][b]
-                                if mode == 'RRS_wo_replacement':
-                                    q[mask] = 0
-                                q = q / q.sum()
-                            gtp = gtp - q
-                            gtp[gtp < 0] = 0
-                            gtp = gtp / gtp.sum()
-                            adjustflag = True
+                        
+                        q = op[i - 1][p_indices[j][i]].clone()
+                        b = b_indices[j][i]
+                        if len(b) > 0:
+                            mask = tree_candidates[0][b]
+                            if mode == 'RRS_wo_replacement':
+                                q[mask] = 0
+                            q = q / q.sum()
+                        gtp = gtp - q
+                        gtp[gtp < 0] = 0
+                        gtp = gtp / gtp.sum()
+                        adjustflag = True
         if adjustflag and accept_length != candidates.shape[1]:
             sample_p = gtp
         else:

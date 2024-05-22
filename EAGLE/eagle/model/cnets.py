@@ -733,12 +733,19 @@ class Model(nn.Module):
 
             return sampled_indices, sampled_probs,probabilities
         elif mode == 'spechub':
-            first = torch.multinomial(probabilities, 1, replacement=True)
-            a = torch.argmax(probabilities, dim=1, keepdim=True)
-            mask = (a==first)
+            first = torch.multinomial(probabilities, 1, replacement=True) # shape [batch_size, 1]
+            # print ("first",first)
+            a = torch.argmax(probabilities, dim=1, keepdim=True) # shape [batch_size, 1]
+            # print ('a',a)
+            mask = (a==first) # shape [batch_size, 1]
 
-            second = torch.where(mask, torch.multinomial(probabilities, 1, replacement=True), a)
+            logits_without_a = logits.clone()
+            logits_without_a[torch.arange(logits.shape[0]), a.squeeze()] = -torch.inf
+            prob_without_a = torch.nn.functional.softmax(logits_without_a, dim=1)
+            second = torch.where(mask, torch.multinomial(prob_without_a, 1, replacement=True), a) # shape [batch_size, 1]
+            # print ("second",second)
             sampled_indices = torch.cat((first, second), dim=1)
+            # print ("sampled_indices",sampled_indices)
             sampled_probs = torch.gather(probabilities, 1, sampled_indices)
             return sampled_indices, sampled_probs,probabilities
 
@@ -820,7 +827,7 @@ class Model(nn.Module):
                 ss_prob.append(topk_prob)
                 ss_op.append(op)
                 #topk_index = torch.topk(last_headout, top_k, dim=-1).indices
-                topk_index = topk_index.view(-1)
+                topk_index = topk_index.view(-1) # .view(-1) makes it a 1D tensor with size [batch_size * top_k]
                 select_index=topk_index[self.tree_buffer['tree_indices'][i]]
                 #len_sq=select_index.shape[0]
                 input_ids=select_index[None,:]

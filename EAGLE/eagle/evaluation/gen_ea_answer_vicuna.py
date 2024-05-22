@@ -72,6 +72,9 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None,
             sample_token,
             logits_processor
         )
+        # print (f'candidates: {candidates}')
+        # print (f'cart_candidates_prob: {cart_candidates_prob}')
+        # print (f'tree_candidates: {tree_candidates}')
         logits, hidden_state_new, outputs = tree_decoding(
             model,
             tree_candidates,
@@ -454,7 +457,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     args.model_id = args.model_id + "-temperature-" + str(args.temperature)
-    args.tree_choices = eval(args.tree_choices)
+    
     if args.num_gpus_total // args.num_gpus_per_model > 1:
         import ray
 
@@ -464,7 +467,8 @@ if __name__ == "__main__":
     if args.answer_file:
         answer_file = args.answer_file
     else:
-        answer_file = f"{args.bench_name}/{args.model_id}.jsonl"
+        answer_file = f"{args.bench_name}/{args.model_id}-{args.mode}-{args.tree_choices}.jsonl"
+    args.tree_choices = eval(args.tree_choices)
 
     print(f"Output to {answer_file}")
 
