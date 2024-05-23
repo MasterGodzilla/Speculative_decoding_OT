@@ -63,6 +63,7 @@ class EaModel(nn.Module):
             self.ea_layer.diff_device = False
         self.ea_layer.to(self.base_model.dtype).to(device)
         self.ea_layer.init_tree(tree_choices)
+        print ("tree buffer:", self.ea_layer.tree_buffer)
 
     def get_tokenizer(self):
         """Get the tokenizer of the base model.

@@ -3,8 +3,6 @@ import torch
 # typing
 from typing import List
 
-TOPK = 10  # topk for sparse tree
-
 
 def pad_path(path: List[int], length: int, pad_value: int = -2) -> List[int]:
     """
@@ -98,6 +96,7 @@ class Tree:
 
 
 def generate_tree_buffers(tree_choices, device="cuda"):
+    TOPK = max([max(x) for x in tree_choices]) + 1
     tree=Tree(tree_choices)
     sorted_tree_choices = sorted(tree_choices, key=lambda x: (len(x), x))
     tree_len = tree.num_node_wchild()
@@ -132,6 +131,7 @@ def generate_tree_buffers(tree_choices, device="cuda"):
     repeat_nums=[[] for _ in depth_counts]
     start = 0
     bias = 0
+    # print ("depth_counts",depth_counts)
     for i in range(len(depth_counts)):
         bias = 0
         repeat_j=0

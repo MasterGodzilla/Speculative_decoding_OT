@@ -739,7 +739,8 @@ class Model(nn.Module):
             # print ('a',a)
             mask = (a==first) # shape [batch_size, 1]
 
-            logits_without_a = logits.clone()
+            logits_without_a = logits.clone() # shape [batch_size, vocab_size]
+            # print ('logits_without_a',logits_without_a[torch.arange(logits.shape[0]), a.squeeze()]) 
             logits_without_a[torch.arange(logits.shape[0]), a.squeeze()] = -torch.inf
             prob_without_a = torch.nn.functional.softmax(logits_without_a, dim=1)
             second = torch.where(mask, torch.multinomial(prob_without_a, 1, replacement=True), a) # shape [batch_size, 1]
@@ -816,6 +817,7 @@ class Model(nn.Module):
 
 
             for i in range(len(self.tree_buffer['tree_indices'])):
+                # print ("i",i)
                 if logits_processor is not None:
                     topk_index,topk_prob,op=self.sample(last_headout,logits_processor,k=self.topk,mode=mode)
                 else:
@@ -828,6 +830,8 @@ class Model(nn.Module):
                 ss_op.append(op)
                 #topk_index = torch.topk(last_headout, top_k, dim=-1).indices
                 topk_index = topk_index.view(-1) # .view(-1) makes it a 1D tensor with size [batch_size * top_k]
+                # print ("topk_index",topk_index)
+                # print ('tree index', self.tree_buffer['tree_indices'][i])
                 select_index=topk_index[self.tree_buffer['tree_indices'][i]]
                 #len_sq=select_index.shape[0]
                 input_ids=select_index[None,:]

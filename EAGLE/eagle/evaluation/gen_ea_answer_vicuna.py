@@ -328,6 +328,7 @@ def get_model_answers(
                         output_ids,
                         spaces_between_special_tokens=False,
                     )
+                    # print ("\nOutput:\n", output, "\n")
                     if conv.stop_str and output.find(conv.stop_str) > 0:
                         output = output[: output.find(conv.stop_str)]
                     for special_token in tokenizer.special_tokens_map.values():
