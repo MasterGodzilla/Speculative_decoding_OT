@@ -1,0 +1,120 @@
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS-binary2.jsonl
+average accept length: 1.8210616438356164
+average answer length: 584.925
+average answer length 292.8125 292.1125
+average throughput: 59.878323537699536
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS-binary3.jsonl
+average accept length: 2.4324971431680904
+average answer length: 558.775
+average answer length 284.4875 274.2875
+average throughput: 74.065482924684
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS-binary4.jsonl
+average accept length: 2.912504213009774
+average answer length: 540.0875
+average answer length 264.0375 276.05
+average throughput: 81.54874705149116
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS-binary5.jsonl
+average accept length: 3.2501491201908737
+average answer length: 544.8875
+average answer length 267.625 277.2625
+average throughput: 82.55807308243587
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS_wo_replacement-binary2.jsonl
+average accept length: 1.8687095166915795
+average answer length: 562.575
+average answer length 283.0875 279.4875
+average throughput: 60.50935446233455
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS_wo_replacement-binary3.jsonl
+average accept length: 2.5584931005006717
+average answer length: 523.7875
+average answer length 269.8875 253.9
+average throughput: 75.561638359763
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS_wo_replacement-binary4.jsonl
+average accept length: 3.0898822232936154
+average answer length: 560.775
+average answer length 272.0875 288.6875
+average throughput: 82.87851330334962
+mt_bench/vicuna-7b-v1.3-temperature-0.6-RRS_wo_replacement-binary5.jsonl
+average accept length: 3.483837162434502
+average answer length: 540.2125
+average answer length 267.225 272.9875
+average throughput: 83.91684552295388
+mt_bench/vicuna-7b-v1.3-temperature-0.6-spechub-binary2.jsonl
+average accept length: 1.8825197917107659
+average answer length: 555.8375
+average answer length 273.2625 282.575
+average throughput: 60.91046967145065
+mt_bench/vicuna-7b-v1.3-temperature-0.6-spechub-binary3.jsonl
+average accept length: 2.59390002824061
+average answer length: 574.0625
+average answer length 288.525 285.5375
+average throughput: 73.41793775121913
+mt_bench/vicuna-7b-v1.3-temperature-0.6-spechub-binary4.jsonl
+average accept length: 3.119228432563791
+average answer length: 513.425
+average answer length 262.5125 250.9125
+average throughput: 81.92424633199327
+mt_bench/vicuna-7b-v1.3-temperature-0.6-spechub-binary5.jsonl
+average accept length: 3.5380412285785248
+average answer length: 534.2
+average answer length 260.95 273.25
+average throughput: 82.08875188685514
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS-binary2.jsonl
+average accept length: 1.805417840003173
+average answer length: 569.0
+average answer length 273.3625 295.6375
+average throughput: 59.47366714014909
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS-binary3.jsonl
+average accept length: 2.3961092715231787
+average answer length: 578.9
+average answer length 288.6 290.3
+average throughput: 71.24934761481401
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS-binary4.jsonl
+average accept length: 2.842530607321633
+average answer length: 589.15
+average answer length 280.975 308.175
+average throughput: 80.08575210746754
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS-binary5.jsonl
+average accept length: 3.1450598077853833
+average answer length: 568.5875
+average answer length 282.25 286.3375
+average throughput: 80.24808940075235
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS_wo_replacement-binary2.jsonl
+average accept length: 1.8327017387427553
+average answer length: 616.6125
+average answer length 309.8125 306.8
+average throughput: 59.80343978197243
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS_wo_replacement-binary3.jsonl
+average accept length: 2.4737227510843236
+average answer length: 548.95
+average answer length 266.45 282.5
+average throughput: 73.42301116876926
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS_wo_replacement-binary4.jsonl
+average accept length: 2.901912852166473
+average answer length: 593.55
+average answer length 287.1375 306.4125
+average throughput: 78.21253838095198
+mt_bench/vicuna-7b-v1.3-temperature-1.0-RRS_wo_replacement-binary5.jsonl
+average accept length: 3.2547651585988637
+average answer length: 565.6375
+average answer length 284.7375 280.9
+average throughput: 77.11631676065404
+mt_bench/vicuna-7b-v1.3-temperature-1.0-spechub-binary2.jsonl
+average accept length: 1.865453776179395
+average answer length: 551.125
+average answer length 267.1 284.025
+average throughput: 58.853765311423345
+mt_bench/vicuna-7b-v1.3-temperature-1.0-spechub-binary3.jsonl
+average accept length: 2.4850366125437757
+average answer length: 585.4125
+average answer length 303.75 281.6625
+average throughput: 70.86166499918149
+mt_bench/vicuna-7b-v1.3-temperature-1.0-spechub-binary4.jsonl
+average accept length: 3.0281298499741336
+average answer length: 585.3375
+average answer length 298.175 287.1625
+average throughput: 79.16771588360321
+mt_bench/vicuna-7b-v1.3-temperature-1.0-spechub-binary5.jsonl
+average accept length: 3.331763581763582
+average answer length: 610.2125
+average answer length 307.0125 303.2
+average throughput: 77.63793079786271

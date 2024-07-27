@@ -1,0 +1,270 @@
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.1, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+total time :267.57021s, latency :0.01466s, decoding step: 18246, large model step: 8195, 2.2264795607077486
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.2, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+total time :308.56284s, latency :0.01385s, decoding step: 22274, large model step: 9468, 2.3525559780312633
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.3, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+
+nan detected
+
+total time :318.44370s, latency :0.01395s, decoding step: 22829, large model step: 9740, 2.3438398357289527
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.4, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+
+nan detected
+
+
+nan detected
+
+total time :305.02673s, latency :0.01358s, decoding step: 22454, large model step: 9365, 2.397650827549386
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.5, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+total time :312.14952s, latency :0.01351s, decoding step: 23101, large model step: 9599, 2.4066048546723615
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.7, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+
+nan detected
+
+total time :304.65400s, latency :0.01384s, decoding step: 22012, large model step: 9322, 2.36129585925767
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.8, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+total time :312.78352s, latency :0.01371s, decoding step: 22813, large model step: 9671, 2.358908075690208
+Namespace(model='JackFram/llama-68m', target='../../../../llama2/llama-2-7b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.9, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+31
+total time :327.90588s, latency :0.01391s, decoding step: 23579, large model step: 10200, 2.3116666666666665

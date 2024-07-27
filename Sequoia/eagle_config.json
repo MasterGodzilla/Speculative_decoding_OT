@@ -1,0 +1,9 @@
+{
+    "acceptance_rate_vector": "eagle_accept_vector.pt",
+    "max_depth": 32,
+    "max_budget": 32,
+    "draft_time": 0,
+    "valid_budget": [32],
+    "target_time":[10],
+    "dst": "../EAGLE/biSeq32.pt"
+}

@@ -371,7 +371,7 @@ def evaluate_posterior(
         accept_cand = candidates[0][:1]
         best_candidate = 0
         for i in range(1, candidates.shape[1]):
-            # print(f'\n-------------------step: {i}-------------------\n')
+            # print (f'\n-------------------step: {i}-------------------\n')
             if i != accept_length:
                 break
             adjustflag = False
@@ -448,19 +448,18 @@ def evaluate_posterior(
                         accept_cand = torch.cat((accept_cand, a[None]), dim=0)
                         accept_length += 1
                         best_candidate = two_cands[0][1] if x1 == a else two_cands[1][1]
-                        # print('directly accept a',a.item())
+                        # print ('directly accept a',a.item())
                         continue
-                    # print("x1",x1.item(),"x2",x2.item(), 'a', a.item())
-                    # print('q[a]',q[a].item(),'q[x1]',q[x1.item()].item(),'q[x2]',q[x2.item()].item())
-                    # print("gtp[x1]",gtp[x1.item()].item(),"gtp[x2]",gtp[x2.item()].item(),"gtp[a]",gtp[a].item())
+                    # print ("x1",x1.item(),"x2",x2.item(), 'a', a.item())
+                    # print ('q[a]',q[a].item(),'q[x1]',q[x1.item()].item(),'q[x2]',q[x2.item()].item())
+                    # print ("gtp[x1]",gtp[x1.item()].item(),"gtp[x2]",gtp[x2.item()].item(),"gtp[a]",gtp[a].item())
                     def residual(p,q, a):
                         pp = torch.max(torch.zeros_like(p,device=p.device), p - q)
                         pp[a] = p[a]
                         qp = torch.max(torch.zeros_like(q, device=q.device), q - p)
                         qp[a] = q[a]
-                        # print('pp sum',pp.sum(),"qp sum",qp.sum())
+                        # print ('pp sum',pp.sum(),"qp sum",qp.sum())
                         return pp, qp
-                    
                         
                     if x2 == a: # (i,a)
                         px1 = gtp[x1.item()]
@@ -468,6 +467,7 @@ def evaluate_posterior(
                         qx1 = cart_candidates_prob[two_cands[0][1], i] 
                         acp = px1 / qx1
                         r = random.random()
+                        # print ('px1',px1,'qx1',qx1,'acp',acp,'r',r)
                         if r <= acp:
                             accept_cand = torch.cat((accept_cand, x1[None]), dim=0)
                             accept_length += 1
@@ -477,14 +477,15 @@ def evaluate_posterior(
                     q_ia[a] = 0
                     gtp, q_ia = residual(gtp, q_ia, a)
                     
-                    # print("after ia i, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
-                    # print('q_ia sum',q_ia.sum())
+                    # print ("after ia i, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ('q_ia sum',q_ia.sum())
                     def get_q_ai(q,a):
                         """
                         use log and softmax to avoid numerical instability
                         """
                         logq = torch.log(q)
                         logq[logq == -torch.inf] = -100 
+                        logq[a] = -torch.inf
                         q_normalized = torch.softmax(logq, dim=0)
                         return q[a]*q_normalized
                     q_ai = get_q_ai(q,a)
@@ -494,40 +495,42 @@ def evaluate_posterior(
                         qx2 = q_ai[x2.item()]
                         acp = px2 / qx2
                         r = random.random()
+                        # print ('px2',px2,'qx2',qx2,'acp',acp,'r',r)
                         if r <= acp:
                             accept_cand = torch.cat((accept_cand, x2[None]), dim=0)
                             accept_length += 1
                             best_candidate = two_cands[1][1]
                             continue
-                    # print('q_ai sum',q_ai.sum(), 'q[a]', q[a].item())
+                    # print ('q_ai sum',q_ai.sum(), 'q[a]', q[a].item())
                     gtp, q_ai = residual(gtp, q_ai, a)
-                    # print("after ai i, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
-                    # print('q_ai sum',q_ai.sum())
+                    # print ("after ai i, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ('q_ai sum',q_ai.sum())
                     
                     if x1 == a:
                         pa = gtp[a]
                         acp = pa / (q_ai.sum())
                         r = random.random()
-                        # print('acp', acp, 'ai a: r', r)
+                        # print ('pa',pa, 'q_ai.sum', q_ai.sum(),'acp',acp,'r',r)
                         if r <= acp:
                             accept_cand = torch.cat((accept_cand, a[None]), dim=0)
                             accept_length += 1
                             best_candidate = two_cands[0][1]
                             continue
                     gtp[a] = max(gtp[a] - q_ai.sum(), 0)
-                    # print("after ai a, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ("after ai a, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
                     if x2 == a:
                         pa = gtp[a]
                         acp = pa / q_ia.sum()
                         r = random.random()
+                        # print ('pa',pa,'q_ia sum',q_ia.sum(),'acp',acp,'r',r)
                         if r <= acp:
                             accept_cand = torch.cat((accept_cand, a[None]), dim=0)
                             accept_length += 1
                             best_candidate = two_cands[1][1]
                             continue
                     gtp[a] = max(gtp[a] - q_ia.sum(), 0)
-                    # print("after ia a, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
-                    # print("gtp.sum()",gtp.sum())
+                    # print ("after ia a, gtp[x1]",gtp[x1.item()],"gtp[x2]",gtp[x2.item()])
+                    # print ("gtp.sum()",gtp.sum())
                     gtp = gtp / gtp.sum()
                     adjustflag = True
                 else:

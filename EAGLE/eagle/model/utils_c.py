@@ -168,7 +168,7 @@ def generate_tree_buffers(tree_choices, device="cuda"):
     # Move the tensors in the dictionary to the specified device
     tree_buffers = {
         k: [i.clone().to(device) for i in v]
-        if isinstance(v[0], torch.Tensor)
+        if v and isinstance(v[0], torch.Tensor)
         else (
             torch.tensor(v, device=device)
             if isinstance(v, torch.Tensor)
