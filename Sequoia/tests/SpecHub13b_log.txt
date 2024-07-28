@@ -1,0 +1,11 @@
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+3
+total time :736.65524s, latency :0.03017s, decoding step: 24420, large model step: 14686, 1.6628081165736075
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+3
+
+nan detected
+
+total time :754.64596s, latency :0.02955s, decoding step: 25535, large model step: 15058, 1.6957763315181298
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+7
