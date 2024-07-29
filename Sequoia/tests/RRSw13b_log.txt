@@ -1,0 +1,84 @@
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+3
+total time :733.34429s, latency :0.03008s, decoding step: 24382, large model step: 14849, 1.641996094013065
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+3
+total time :756.33893s, latency :0.02954s, decoding step: 25603, large model step: 15309, 1.6724149193284996
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+7
+total time :620.20315s, latency :0.02546s, decoding step: 24360, large model step: 11879, 2.0506776664702415
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+7
+total time :618.25821s, latency :0.02444s, decoding step: 25293, large model step: 11806, 2.1423852278502458
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+15
+total time :582.38456s, latency :0.02380s, decoding step: 24475, large model step: 10502, 2.330508474576271
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+15
+total time :579.49605s, latency :0.02278s, decoding step: 25443, large model step: 10457, 2.433107009658602
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+31
+total time :588.14862s, latency :0.02399s, decoding step: 24516, large model step: 9919, 2.4716201229962698
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+31
+total time :563.80336s, latency :0.02213s, decoding step: 25473, large model step: 9516, 2.676860025220681
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/3^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+4
+total time :723.67952s, latency :0.02966s, decoding step: 24396, large model step: 14558, 1.6757796400604479
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/3^2.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+4
+total time :729.99337s, latency :0.02881s, decoding step: 25341, large model step: 14693, 1.724698836180494
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/3^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+13
+total time :587.51015s, latency :0.02433s, decoding step: 24145, large model step: 11079, 2.1793483166350756
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/3^3.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+13
+total time :590.27279s, latency :0.02341s, decoding step: 25217, large model step: 11146, 2.262425982415216
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/3^4.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+40
+total time :606.22446s, latency :0.02475s, decoding step: 24495, large model step: 9948, 2.4623039806996383
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/3^4.pt', start=0, end=200, T=0.6, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+40
+total time :578.10751s, latency :0.02269s, decoding step: 25481, large model step: 9490, 2.6850368809272918
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+3
+total time :707.28232s, latency :0.03046s, decoding step: 23221, large model step: 14289, 1.6250962278675904
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^2.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+3
+total time :754.16787s, latency :0.03007s, decoding step: 25084, large model step: 15281, 1.6415156076173025
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+7
+total time :614.73460s, latency :0.02639s, decoding step: 23297, large model step: 11743, 1.983905305288257
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^3.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+7
+total time :627.76448s, latency :0.02520s, decoding step: 24909, large model step: 12024, 2.0716067864271457
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+15
+total time :585.83744s, latency :0.02476s, decoding step: 23659, large model step: 10584, 2.235355253212396
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^4.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+15
+total time :598.63031s, latency :0.02368s, decoding step: 25277, large model step: 10823, 2.335489235886538
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+31
+total time :572.12315s, latency :0.02498s, decoding step: 22902, large model step: 9670, 2.3683557394002066
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+31
+total time :589.02927s, latency :0.02340s, decoding step: 25175, large model step: 9983, 2.5217870379645397
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/3^2.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+4
+total time :699.14964s, latency :0.02968s, decoding step: 23554, large model step: 14046, 1.6769186957140823
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/3^2.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+4
+total time :729.87782s, latency :0.02920s, decoding step: 24994, large model step: 14695, 1.7008506294658048
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/3^3.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+13
+total time :574.00450s, latency :0.02476s, decoding step: 23185, large model step: 10822, 2.1423951210497134
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/3^3.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+13
+total time :603.17648s, latency :0.02397s, decoding step: 25162, large model step: 11402, 2.20680582353973
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='cnn', growmap='../growmaps/k-ary_trees/3^4.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+40
+total time :576.65255s, latency :0.02455s, decoding step: 23489, large model step: 9448, 2.4861346316680777
+Namespace(model='JackFram/llama-160m', target='meta-llama/Llama-2-13b-chat-hf', dataset='openwebtext', growmap='../growmaps/k-ary_trees/3^4.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='greedy', offloading=False)
+40
+total time :604.51936s, latency :0.02387s, decoding step: 25330, large model step: 9930, 2.5508559919436053
