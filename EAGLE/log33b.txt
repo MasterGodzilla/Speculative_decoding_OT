@@ -1,0 +1,144 @@
+mt_bench/33b/RRS0.6binary2.txt
+mt_bench/33b/RRS0.6binary3.txt
+mt_bench/33b/RRS0.6binary4.txt
+mt_bench/33b/RRS0.6binary5.txt
+mt_bench/33b/RRS1.0binary2.txt
+mt_bench/33b/RRS1.0binary3.txt
+mt_bench/33b/RRS1.0binary4.txt
+mt_bench/33b/RRS1.0binary5.txt
+mt_bench/33b/RRS_wo_replacement0.6binary2.txt
+mt_bench/33b/RRS_wo_replacement0.6binary3.txt
+mt_bench/33b/RRS_wo_replacement0.6binary4.txt
+mt_bench/33b/RRS_wo_replacement0.6binary5.txt
+mt_bench/33b/RRS_wo_replacement1.0binary2.txt
+mt_bench/33b/RRS_wo_replacement1.0binary3.txt
+mt_bench/33b/RRS_wo_replacement1.0binary4.txt
+mt_bench/33b/RRS_wo_replacement1.0binary5.txt
+mt_bench/33b/spechub0.6binary2.txt
+mt_bench/33b/spechub0.6binary3.txt
+mt_bench/33b/spechub0.6binary4.txt
+mt_bench/33b/spechub0.6binary5.txt
+mt_bench/33b/spechub1.0binary2.txt
+mt_bench/33b/spechub1.0binary3.txt
+mt_bench/33b/spechub1.0binary4.txt
+mt_bench/33b/spechub1.0binary5.txt
+mt_bench/33b/RRS0.6binary2.txt
+average accept length: 1.7878133990957665
+average answer length: 652.4625
+average answer length 323.625 328.8375
+average throughput: 27.894720529393208
+mt_bench/33b/RRS0.6binary3.txt
+average accept length: 2.346920250702399
+average answer length: 678.7
+average answer length 334.55 344.15
+average throughput: 34.709256567863434
+mt_bench/33b/RRS0.6binary4.txt
+average accept length: 2.7273442416614224
+average answer length: 650.0625
+average answer length 327.05 323.0125
+average throughput: 37.94415176779409
+mt_bench/33b/RRS0.6binary5.txt
+average accept length: 3.010232767345103
+average answer length: 669.25
+average answer length 330.8125 338.4375
+average throughput: 39.47966331462756
+mt_bench/33b/RRS1.0binary2.txt
+average accept length: 1.7792404043117633
+average answer length: 662.3
+average answer length 335.875 326.425
+average throughput: 28.04117574308975
+mt_bench/33b/RRS1.0binary3.txt
+average accept length: 2.339931649727043
+average answer length: 659.0125
+average answer length 338.975 320.0375
+average throughput: 34.822480961875826
+mt_bench/33b/RRS1.0binary4.txt
+average accept length: 2.7252259311497675
+average answer length: 652.1125
+average answer length 328.3375 323.775
+average throughput: 37.995075311555645
+mt_bench/33b/RRS1.0binary5.txt
+average accept length: 3.0190058479532165
+average answer length: 671.125
+average answer length 337.3375 333.7875
+average throughput: 39.529905259447034
+mt_bench/33b/RRS_wo_replacement0.6binary2.txt
+average accept length: 1.8326501332240213
+average answer length: 670.6125
+average answer length 336.9625 333.65
+average throughput: 28.699680514013313
+mt_bench/33b/RRS_wo_replacement0.6binary3.txt
+average accept length: 2.469397613641853
+average answer length: 638.9875
+average answer length 318.1125 320.875
+average throughput: 36.0128537207076
+mt_bench/33b/RRS_wo_replacement0.6binary4.txt
+average accept length: 2.9297518377272977
+average answer length: 662.6
+average answer length 333.8625 328.7375
+average throughput: 39.51758269806879
+mt_bench/33b/RRS_wo_replacement0.6binary5.txt
+average accept length: 3.2113851992409868
+average answer length: 634.65
+average answer length 316.8625 317.7875
+average throughput: 40.41584659113108
+mt_bench/33b/RRS_wo_replacement1.0binary2.txt
+average accept length: 1.825721784776903
+average answer length: 652.125
+average answer length 317.35 334.775
+average throughput: 28.497797640301158
+mt_bench/33b/RRS_wo_replacement1.0binary3.txt
+average accept length: 2.4169051878354204
+average answer length: 675.525
+average answer length 351.0125 324.5125
+average throughput: 34.90447187283068
+mt_bench/33b/RRS_wo_replacement1.0binary4.txt
+average accept length: 2.864925450943593
+average answer length: 686.9375
+average answer length 339.8125 347.125
+average throughput: 38.69461357297397
+mt_bench/33b/RRS_wo_replacement1.0binary5.txt
+average accept length: 3.1116300524707374
+average answer length: 674.5625
+average answer length 347.3625 327.2
+average throughput: 39.21189434855877
+mt_bench/33b/spechub0.6binary2.txt
+average accept length: 1.8489881367759944
+average answer length: 662.4
+average answer length 335.2875 327.1125
+average throughput: 28.370380891441492
+mt_bench/33b/spechub0.6binary3.txt
+average accept length: 2.5098142222646738
+average answer length: 656.9125
+average answer length 329.4 327.5125
+average throughput: 36.049727431961315
+mt_bench/33b/spechub0.6binary4.txt
+average accept length: 2.9762408190518586
+average answer length: 668.6125
+average answer length 341.3125 327.3
+average throughput: 39.52776209966805
+mt_bench/33b/spechub0.6binary5.txt
+average accept length: 3.3245024717961718
+average answer length: 655.675
+average answer length 327.9 327.775
+average throughput: 40.977641850011885
+mt_bench/33b/spechub1.0binary2.txt
+average accept length: 1.845417144398732
+average answer length: 684.05
+average answer length 335.1625 348.8875
+average throughput: 28.624725709960426
+mt_bench/33b/spechub1.0binary3.txt
+average accept length: 2.465021518175991
+average answer length: 673.0125
+average answer length 332.925 340.0875
+average throughput: 35.40944438650701
+mt_bench/33b/spechub1.0binary4.txt
+average accept length: 2.922981634081973
+average answer length: 678.3875
+average answer length 352.525 325.8625
+average throughput: 38.849998795496646
+mt_bench/33b/spechub1.0binary5.txt
+average accept length: 3.2079027712541097
+average answer length: 682.9625
+average answer length 343.475 339.4875
+average throughput: 39.552505252300584
