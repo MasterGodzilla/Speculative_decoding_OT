@@ -43,7 +43,7 @@ Then, run the following command to test the Llama-2 model with the draft model:
 ```bash
 cd Sequoia/tests
 # SpecHub
-echo "SpecHub" >> log.txt
+echo "SpecHub" >> ../../log.txt
 python my_testbed.py --model meta-llama/Llama-2-7b-chat-hf \
 --target JackFram/llama-68m \
 --T 1.0 --P 1.0 --start 0 --end 200 --M 384 \
@@ -51,7 +51,7 @@ python my_testbed.py --model meta-llama/Llama-2-7b-chat-hf \
 --Mode mine --dataset cnn >> ../../log.txt
 
 # RRS
-echo "RRS" >> log.txt
+echo "RRS" >> ../../log.txt
 python test_specinfer.py --model meta-llama/Llama-2-7b-chat-hf \
 --target JackFram/llama-68m \
 --T 1.0 --P 1.0 --start 0 --end 200 --M 384 \
@@ -59,7 +59,7 @@ python test_specinfer.py --model meta-llama/Llama-2-7b-chat-hf \
 --Mode greedy --dataset cnn >> ../../log.txt
 
 # RRSw
-echo "RRSw" >> log.txt
+echo "RRSw" >> ../../log.txt
 python testbed.py --model meta-llama/Llama-2-7b-chat-hf \
 --target JackFram/llama-68m \
 --T 1.0 --P 1.0 --start 0 --end 200 --M 384 \
