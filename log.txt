@@ -1,0 +1,5 @@
+SpecHub
+RRS
+RRSw
+Namespace(model='meta-llama/Llama-2-7b-chat-hf', target='JackFram/llama-68m', dataset='cnn', growmap='Sequoia/growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)
+Namespace(model='meta-llama/Llama-2-7b-chat-hf', target='JackFram/llama-68m', dataset='cnn', growmap='Sequoia/growmaps/k-ary_trees/2^5.pt', start=0, end=200, T=1.0, P=1.0, M=384, seed=17, Mode='mine', offloading=False)

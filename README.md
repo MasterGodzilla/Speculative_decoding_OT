@@ -12,16 +12,6 @@ SpecHub addresses the inefficiencies of traditional Multi-Draft Speculative Deco
 - **Optimal Transport Formulation**: Utilizes a simplified Linear Programming (LP) model to optimize the acceptance rate of draft tokens.
 - **Seamless Integration**: Can be integrated into existing MDSD frameworks with minimal computational overhead.
 
-## Installation
-
-To get started with SpecHub, clone this repository and install the required dependencies:
-
-```bash
-git clone https://github.com/MasterGodzilla/Speculative_decoding_OT.git
-cd Speculative_decoding_OT
-pip install -r requirements.txt
-```
-
 ## Usage
 
 To use SpecHub in your projects, follow the steps below:
@@ -41,31 +31,38 @@ pip install sentencepiece
 pip install typing-extensions
 ```
 
+Set up your Huggingface Access Tokens by running the following command:
+
+```bash
+huggingface-cli login
+```
+
+
 Then, run the following command to test the Llama-2 model with the draft model:
 
 ```bash
+cd Sequoia/tests
 # SpecHub
 echo "SpecHub" >> log.txt
-python Sequoia/tests/my_testbed.py --model meta-llama/Llama-2-7b-chat-hf \
+python my_testbed.py --model meta-llama/Llama-2-7b-chat-hf \
 --target JackFram/llama-68m \
 --T 1.0 --P 1.0 --start 0 --end 200 --M 384 \
 --growmap Sequoia/growmaps/k-ary_trees/2^5.pt \
---Mode mine --dataset cnn >> log.txt
+--Mode mine --dataset cnn >> ../../log.txt
 
 # RRS
 echo "RRS" >> log.txt
-python Sequoia/tests/test_specinfer.py --model meta-llama/Llama-2-7b-chat-hf \
+python test_specinfer.py --model meta-llama/Llama-2-7b-chat-hf \
 --target JackFram/llama-68m \
 --T 1.0 --P 1.0 --start 0 --end 200 --M 384 \
 --growmap Sequoia/growmaps/k-ary_trees/2^5.pt \
---Mode greedy --dataset cnn >> log.txt
+--Mode greedy --dataset cnn >> ../../log.txt
 
 # RRSw
 echo "RRSw" >> log.txt
-python Sequoia/tests/testbed.py --model meta-llama/Llama-2-7b-chat-hf \
+python testbed.py --model meta-llama/Llama-2-7b-chat-hf \
 --target JackFram/llama-68m \
 --T 1.0 --P 1.0 --start 0 --end 200 --M 384 \
 --growmap Sequoia/growmaps/k-ary_trees/2^5.pt \
---Mode greedy --dataset cnn >> log.txt
-
+--Mode greedy --dataset cnn >> ../../log.txt
 ```
